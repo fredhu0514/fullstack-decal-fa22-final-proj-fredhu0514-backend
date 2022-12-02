@@ -37,44 +37,28 @@ class JobCreate(viewsets.ViewSet):
     http_method_names = ['post']
 
     def create(self, request, *args, **kwarg):
-        print("WTF0")
         user = request.user
-        print("USER", user, user.email)
         if not user.is_authenticated:
             return Response(data={"detail": "you have to log in first"}, status=status.HTTP_400_BAD_REQUEST)
-        print("WTF1")
         data = {
             "company": request.data.get('company'),
             "refer_scope_link": request.data.get('refer_scope_link'),
             "refer_scope_description": request.data.get('refer_scope_description'),
             "refer_requirement": request.data.get('refer_requirement'),
         }
-        print("REQUEST", request.data)
-        print("DATA", data)
 
         err_msg = self.validate_data(data)
         if err_msg:
-            print("FUCK the error++++++++++++", err_msg)
             return Response(data={"error": err_msg}, status=status.HTTP_400_BAD_REQUEST)
-        print("WTF2")
 
         data['recommender'] = user.pk
 
-        serializer = self.serializer_class(data=data) #, context={'author': user})
-        print("WTF3")
+        serializer = self.serializer_class(data=data)
 
-        print("serial", serializer)
         if serializer.is_valid():
-            print("WTF4.1")
             serializer.save()
-            print("WTF5")
-            # instance = Job.objects.filter(id=serializer.data['id']).first()
-            # print("WTF6")
             return Response(data={}, status=status.HTTP_201_CREATED)
         else:
-            print("WTF4.2")
-            print(serializer.errors)
-            print("DEBUG ABOVE")
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def validate_data(self, data):
